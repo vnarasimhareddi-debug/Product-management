@@ -1,0 +1,82 @@
+from fastapi import FastAPI
+from pydantic import BaseModel, Field
+from typing import Dict, Any
+from datetime import datetime
+
+app = FastAPI(title="CausalCollect Action Engine Protocol (AEP)",
+              description="API for AI-native Next Best Action in Debt Collections",
+              version="1.0.0")
+
+# --- 1. Pydantic Models (The Protocol Contract) ---
+class ActionRequest(BaseModel):
+    account_id: str = Field(..., example="ACC_99821")
+    trigger_event: str = Field(..., example="INBOUND_CALL_CONNECTED")
+    current_timestamp: str = Field(..., example="2023-10-27T14:30:00Z")
+    session_metadata: Dict[str, Any] = Field(..., example={"channel_origin": "TELECALLER_INBOUND"})
+
+class ActionResponse(BaseModel):
+    account_id: str
+    decision_id: str
+    recommended_action: Dict[str, Any]
+    expected_net_value: float
+    confidence_score: float
+    audit_trail: Dict[str, Any]
+
+# --- 2. The Core Engine Logic (Mocked for sub-200ms inference) ---
+class MockEngine:
+    def process(self, account_id: str) -> Dict[str, Any]:
+        # In reality, this queries a Redis Feature Store and runs Causal Forest inference
+        return {
+            "channel": "AI_Voice_Bot",
+            "timing": "Immediate (Inbound session active)",
+            "intensity": "1 touch today, 24hr cool-off",
+            "language": "Tamil",
+            "tone": "Empathetic",
+            "expected_net_value": 450.50,
+            "confidence_score": 0.88,
+            "reason_codes": [
+                "High uplift score for voice vs SMS (+15%)",
+                "Salary credit expected in 2 days",
+                "Optimal cost-to-uplift ratio"
+            ]
+        }
+
+# --- 3. FastAPI Endpoints ---
+@app.post("/v1/get_next_best_action", response_model=ActionResponse, tags=["Action Engine"])
+def get_next_best_action(request: ActionRequest):
+    """
+    Phase 1: Receive trigger from CRM.
+    Phase 2: Apply Compliance Mask (Mocked).
+    Phase 3: Causal Uplift Optimization.
+    Phase 4: Return Action & Audit Log.
+    """
+    engine = MockEngine()
+    action_data = engine.process(request.account_id)
+    
+    decision_id = f"DEC_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{request.account_id}"
+    
+    return ActionResponse(
+        account_id=request.account_id,
+        decision_id=decision_id,
+        recommended_action={
+            "channel": action_data["channel"],
+            "timing": action_data["timing"],
+            "intensity": action_data["intensity"],
+            "language": action_data["language"],
+            "tone": action_data["tone"]
+        },
+        expected_net_value=action_data["expected_net_value"],
+        confidence_score=action_data["confidence_score"],
+        audit_trail={
+            "reason_codes": action_data["reason_codes"],
+            "compliance_checks_passed": ["FPC_Hours", "DPDP_Consent", "Weekly_Frequency_Limit"],
+            "model_version": "CausalForest_v2.4"
+        }
+    )
+
+@app.post("/v1/feedback_loop", tags=["Feedback Loop"])
+def ingest_feedback(decision_id: str, disposition_code: str, payment_amount: float):
+    """
+    Closed-loop feedback ingestion for Offline RL retraining.
+    """
+    return {"status": "success", "message": f"Feedback for {decision_id} ingested. RL weights updated."}
