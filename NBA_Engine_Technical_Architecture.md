@@ -8,6 +8,8 @@
 The NBA Engine reframes collections from a static, rules-driven waterfall into a closed-loop, causally-aware decision system. The guiding question shifts from *"who is most likely to pay?"* to *"which action, for this customer, right now, causally maximizes recovery while minimizing cost, complaints, and regulatory exposure?"* This move from **predictive to prescriptive**, and from **correlation to causation** ,underpins every design choice below. Five components form the spine of the system: a **Causal Uplift Model** to isolate true incremental impact, an **Off-Policy Evaluation (OPE) Harness** to de-risk deployment before any customer is touched, a **Constrained Contextual Bandit** for real-time single-action decisions, a **Multi-Touch RL Trainer** for optimizing entire recovery journeys, and a **Trust Loop** that makes every recommendation auditable.
 
 ### High-Level Component Architecture
+<img width="1600" height="914" alt="WhatsApp Image 2026-09-07 at 22 41 43" src="https://github.com/user-attachments/assets/6e389a22-6417-4be8-9f4c-825931dad1b0" />
+
 
 - **Data Ingestion:** CDC streams (loan ledger, repayment history) via Kafka, plus batch ETL for CRM/dialer logs, SMS/WhatsApp/app engagement, and bureau pulls.
 - **Feature Store (Feast):** Single source of truth serving both offline (training-consistent) and online (low-latency) features, eliminating train/serve skew.
@@ -20,6 +22,8 @@ The NBA Engine reframes collections from a static, rules-driven waterfall into a
 - **Explainability / Trust Loop (SHAP):** Attaches a reason code to every recommendation, surfaced to agents and compliance reviewers.
 
 ### Data Flow
+<img width="1600" height="914" alt="WhatsApp Image 2026-09-07 at 22 41 43" src="https://github.com/user-attachments/assets/8189563c-01e5-4a57-b3eb-d08ecac78f15" />
+
 
 Historical interaction logs, tagged with the propensity of the action that was actually taken, feed the OPE Harness for offline policy evaluation. Only policies clearing the OPE bar reach the Decision Service, which queries the Feature Store and Uplift/Bandit models at serving time. Every served decision and its downstream outcome (paid / not paid / complaint) is logged back with its propensity closing the loop and feeding nightly uplift-model retraining and periodic (weekly/monthly) bandit and RL policy refreshes.
 
@@ -32,6 +36,8 @@ Historical interaction logs, tagged with the propensity of the action that was a
 ---
 
 ## Implementation Details & Metrics
+<img width="1600" height="914" alt="WhatsApp Image 2026-09-07 at 22 44 05" src="https://github.com/user-attachments/assets/bab73605-b1d4-4982-b2a7-f856255e11d0" />
+
 
 ### Technology Stack
 Python 3.11 · **econml / causalml** (uplift modeling) · **scikit-learn** (baseline propensity & response models) · **PyTorch + d3rlpy** (offline RL / CQL) · **FastAPI** (real-time serving) · **Feast** (feature store) · **MLflow** (model registry & experiment tracking) · **Kafka** (streaming ingestion) · **Redis** (online feature cache) · **Airflow** (batch orchestration) · **Kubernetes** (deployment & autoscaling).
