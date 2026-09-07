@@ -22,7 +22,8 @@ The NBA Engine reframes collections from a static, rules-driven waterfall into a
 - **Explainability / Trust Loop (SHAP):** Attaches a reason code to every recommendation, surfaced to agents and compliance reviewers.
 
 ### Data Flow
-<img width="1600" height="914" alt="WhatsApp Image 2026-09-07 at 22 41 43" src="https://github.com/user-attachments/assets/8189563c-01e5-4a57-b3eb-d08ecac78f15" />
+<img width="1600" height="914" alt="data" src="https://github.com/user-attachments/assets/2f7bdf07-c5ea-4a38-98cd-fe9b342fedd5" />
+
 
 
 Historical interaction logs, tagged with the propensity of the action that was actually taken, feed the OPE Harness for offline policy evaluation. Only policies clearing the OPE bar reach the Decision Service, which queries the Feature Store and Uplift/Bandit models at serving time. Every served decision and its downstream outcome (paid / not paid / complaint) is logged back with its propensity closing the loop and feeding nightly uplift-model retraining and periodic (weekly/monthly) bandit and RL policy refreshes.
